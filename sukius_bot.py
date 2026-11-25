@@ -27,19 +27,19 @@ import html  # BUG #17, #18 FIX: HTML escape
 
 # ============ CONFIG ============
 BOT_TOKEN = "9188443966:AAFwg7HwfNIh7gkcdXUvGzUtK9EsHLyYVP4"  # Apna bot token yaha daalo (@BotFather se lo)
-ADMIN_USER_ID = 0  #Yaha Admin apna user id daalega (@userinfobot se lo)
+ADMIN_USER_ID =7793868453#Yaha Admin apna user id daalega (@userinfobot se lo)
 SUCCESS_IMG = "YOUR_FILE_ID_HERE" # @RawDataBot ko image bhejo, file_id copy karo
-FAMPAY_UPI_ID = "YOUR_UPI_ID_HERE" #Apna famPay upi id yaha daalo
+FAMPAY_UPI_ID = "binodmahato@fam" #Apna famPay upi id yaha daalo
 DB_PATH = "your_database.db" #Database file ka naam (change kar sakte ho)
 BACKUP_DIR = "backups"
 
-API_URL = "YOUR_API_URL" #Apna API endpoint yaha daalo
-API_KEY = "YOUR_API_KEY_HERE" #Apna api key yaha daalo
-MASTER_KEY = "YOUR_MASTER_KEY_HERE" #Apna master key yaha daalo
+API_URL = "https://luckypanelstore.shop/reseller_api.php" #Apna API endpoint yaha daalo
+API_KEY = "69d970c2af2c15af604b51a6647833f3" #Apna api key yaha daalo
+MASTER_KEY = "a7f3e8b2c9d1f4a6b8c2d5e9f1a3b6c8" #Apna master key yaha daalo
 
-FAMPAY_VERIFY_URL = "YOUR_FAMPAY_URL" #Apna verify URL yaha daalo
-FAMPAY_QR_URL = "YOUR_FAMPAY_QR_URL" #Apna QR URL yaha daalo
-FAMPAY_API_KEY = "YOUR_FAMPAY_API_KEY_HERE" #Apna FAMPAY API key yaha daalo api lene ke liye admin @Sukisu_xyz ko contact karo
+FAMPAY_VERIFY_URL = "https://famgateway.in/api/verify-order.php" #Apna verify URL yaha daalo
+FAMPAY_QR_URL = "https://famgateway.in/api/qr.php" #Apna QR URL yaha daalo
+FAMPAY_API_KEY = "fam_ae9d50619f4090d7671d3b647f0c4cbd4e5b751d" #Apna FAMPAY API key yaha daalo api lene ke liye admin @Sukisu_xyz ko contact karo
 
 FAMPAY_TIMEOUT_SECONDS = 300
 FAMPAY_CHECK_INTERVAL = 5
@@ -645,7 +645,7 @@ Jald hi wapas aa jayega!
 
 ⏳ Thodi der baad try karo."""
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("🔄 Check Again", callback_data="check_maintenance", style="primary"))
+    markup.add(InlineKeyboardButton("🔄 Check Again", callback_data="check_maintenance"))
     while True:
         try:
             conn = get_db()
@@ -684,7 +684,7 @@ Ab aap phir se shopping kar sakte ho.
 
 🚀 Tap Shop Now to Start!"""
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("🔑 Shop Key", callback_data="shop_now", style="danger"))
+    markup.add(InlineKeyboardButton("🔑 Shop Key", callback_data="shop_now"))
     while True:
         try:
             conn = get_db()
@@ -715,7 +715,13 @@ def verify_fampay_payment(order_id):
         req = urllib.request.Request(verify_url, headers={'User-Agent': 'Mozilla/5.0'})
         with urllib.request.urlopen(req, timeout=15) as response:
             res = json.loads(response.read().decode())
-        return str(res.get("status", "")).lower() == "success"
+        top_status = str(res.get("status", "")).lower()
+        if top_status != "success":
+            return False
+        data = res.get("data", {})
+        if isinstance(data, dict) and data.get("status") is not None:
+            return str(data.get("status", "")).lower() == "success"
+        return True
     except Exception as e:
         logger.warning(f"verify_fampay_payment error: {e}")
         return False
@@ -954,10 +960,10 @@ def check_pending_api_orders():
 ⚠️ Key pe click karo—copy ho jayegi!"""
                 markup = InlineKeyboardMarkup(row_width=1)
                 if product["download_link"]:
-                    markup.add(InlineKeyboardButton("📥 Download Files", url=product["download_link"], style="primary"))
+                    markup.add(InlineKeyboardButton("📥 Download Files", url=product["download_link"]))
                 if product["demo_video"]:
-                    markup.add(InlineKeyboardButton("📺 Demo Video", url=product["demo_video"], style="primary"))
-                markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+                    markup.add(InlineKeyboardButton("📺 Demo Video", url=product["demo_video"]))
+                markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main"))
                 try:
                     safe_send(order["user_id"], caption, markup)
                 except Exception as e:
@@ -1042,7 +1048,7 @@ def check_spin_reward_notifications():
 ❌ Abhi purchase nahi kiya toh expire ho jaega!
 👇 Jaldi karo!"""
                     markup = InlineKeyboardMarkup(row_width=1)
-                    markup.add(InlineKeyboardButton("🛒 Shop Now", callback_data="shop_now", style="danger"))
+                    markup.add(InlineKeyboardButton("🛒 Shop Now", callback_data="shop_now"))
                     safe_send(reward["user_id"], warning_text, markup)
                 except Exception as e:
                     logger.error(f"spin warning send error: {e}")
@@ -1061,7 +1067,7 @@ def check_spin_reward_notifications():
 
 🍀 Kal phir spin karo — next time jaldi use karna!"""
                     markup = InlineKeyboardMarkup(row_width=1)
-                    markup.add(InlineKeyboardButton("🎮 Lucky Spin", callback_data="lucky_spin", style="success"))
+                    markup.add(InlineKeyboardButton("🎮 Lucky Spin", callback_data="lucky_spin"))
                     safe_send(reward["user_id"], expire_text, markup)
                 except Exception as e:
                     logger.error(f"spin expiry send error: {e}")
@@ -1103,7 +1109,7 @@ def check_review_reminders():
                         product_name = product["name"] if product else "Product"
                         cursor.execute("UPDATE review_reminders SET reminder_count=reminder_count+1, last_reminder_at=? WHERE id=?", (utc_now_str(), reminder["id"]))
                         conn.commit()
-                        markup = InlineKeyboardMarkup().add(InlineKeyboardButton("⭐ Rate Now", callback_data=f"review_{reminder['product_id']}_5", style="primary"))
+                        markup = InlineKeyboardMarkup().add(InlineKeyboardButton("⭐ Rate Now", callback_data=f"review_{reminder['product_id']}_5"))
                         safe_send(reminder["user_id"], f"⏰ REVIEW REMINDER\n\nAapne {esc(product_name)} purchase kiya tha.\n\nKaisa raha experience?\n\nPlease review de do!", markup)
                 except Exception as e:
                     logger.error(f"review reminder inner error: {e}")
@@ -1271,17 +1277,17 @@ def get_welcome_text(user_id):
 
 def get_main_menu(user_id):
     if is_banned(user_id):
-        return InlineKeyboardMarkup().add(InlineKeyboardButton("📞 Support", callback_data="support", style="danger"))
+        return InlineKeyboardMarkup().add(InlineKeyboardButton("📞 Support", callback_data="support"))
     markup = InlineKeyboardMarkup(row_width=2)
-    markup.add(InlineKeyboardButton("🔑 Shop Key", callback_data="shop_now", style="danger"), InlineKeyboardButton("👤 My Profile", callback_data="profile", style="primary"))
-    markup.add(InlineKeyboardButton("💰 Add Balance", callback_data="add_balance", style="success"), InlineKeyboardButton("📜 All History", callback_data="history", style="primary"))
-    markup.add(InlineKeyboardButton("🎬 Tutorial", callback_data="tutorial", style="danger"), InlineKeyboardButton("🤝 Become Reseller", callback_data="reseller_info" if not is_reseller(user_id) else "reseller_panel", style="success"))
-    markup.add(InlineKeyboardButton("📸 Selling Proof", callback_data="selling_proof", style="danger"), InlineKeyboardButton("📞 Support", callback_data="support", style="success"))
-    markup.add(InlineKeyboardButton("❓ FAQ", callback_data="faq_menu", style="primary"), InlineKeyboardButton("🎁 Referral", callback_data="referral", style="success"))
+    markup.add(InlineKeyboardButton("🔑 Shop Key", callback_data="shop_now"), InlineKeyboardButton("👤 My Profile", callback_data="profile"))
+    markup.add(InlineKeyboardButton("💰 Add Balance", callback_data="add_balance"), InlineKeyboardButton("📜 All History", callback_data="history"))
+    markup.add(InlineKeyboardButton("🎬 Tutorial", callback_data="tutorial"), InlineKeyboardButton("🤝 Become Reseller", callback_data="reseller_info" if not is_reseller(user_id) else "reseller_panel"))
+    markup.add(InlineKeyboardButton("📸 Selling Proof", callback_data="selling_proof"), InlineKeyboardButton("📞 Support", callback_data="support"))
+    markup.add(InlineKeyboardButton("❓ FAQ", callback_data="faq_menu"), InlineKeyboardButton("🎁 Referral", callback_data="referral"))
     if not is_reseller(user_id):
-        markup.add(InlineKeyboardButton("🎮 Lucky Spin", callback_data="lucky_spin", style="success"))
+        markup.add(InlineKeyboardButton("🎮 Lucky Spin", callback_data="lucky_spin"))
     if user_id in get_admin_ids():
-        markup.add(InlineKeyboardButton("🔧 Admin", callback_data="admin_panel", style="primary"))
+        markup.add(InlineKeyboardButton("🔧 Admin", callback_data="admin_panel"))
     return markup
 
 # ============ ADMIN PANEL ============
@@ -1292,17 +1298,17 @@ def build_admin_markup(buttons, back_callback="admin_panel", back_text="◀️ B
         last = buttons[-1]
         for i in range(0, len(paired), 2):
             markup.add(
-                InlineKeyboardButton(paired[i][0], callback_data=paired[i][1], style=paired[i][2]),
-                InlineKeyboardButton(paired[i+1][0], callback_data=paired[i+1][1], style=paired[i+1][2])
+                InlineKeyboardButton(paired[i][0], callback_data=paired[i][1]),
+                InlineKeyboardButton(paired[i+1][0], callback_data=paired[i+1][1])
             )
-        markup.add(InlineKeyboardButton(last[0], callback_data=last[1], style=last[2]))
+        markup.add(InlineKeyboardButton(last[0], callback_data=last[1]))
     else:
         for i in range(0, len(buttons), 2):
             markup.add(
-                InlineKeyboardButton(buttons[i][0], callback_data=buttons[i][1], style=buttons[i][2]),
-                InlineKeyboardButton(buttons[i+1][0], callback_data=buttons[i+1][1], style=buttons[i+1][2])
+                InlineKeyboardButton(buttons[i][0], callback_data=buttons[i][1]),
+                InlineKeyboardButton(buttons[i+1][0], callback_data=buttons[i+1][1])
             )
-    markup.add(InlineKeyboardButton(back_text, callback_data=back_callback, style="danger"))
+    markup.add(InlineKeyboardButton(back_text, callback_data=back_callback))
     return markup
 
 def get_admin_panel(user_id):
@@ -1578,15 +1584,15 @@ def show_faq_menu(call):
     cursor.close()
     conn.close()
     if not faqs:
-        safe_navigate(call, "❓ FAQ\n\nAbhi koi FAQ nahi hai.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger")))
+        safe_navigate(call, "❓ FAQ\n\nAbhi koi FAQ nahi hai.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="back_main")))
         return
     text = "❓ <b>FAQ — FREQUENTLY ASKED QUESTIONS</b>\n━━━━━━━━━━━━━━━\n\nNeeche question pe click karo:\n"
     markup = InlineKeyboardMarkup(row_width=1)
     for f in faqs:
         q = f['question'][:58] if len(f['question']) > 58 else f['question']
-        markup.add(InlineKeyboardButton(f"❓ {q}", callback_data=f"faq_show_{f['id']}", style="primary"))
-    markup.add(InlineKeyboardButton("📞 Still need help?", callback_data="support", style="success"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+        markup.add(InlineKeyboardButton(f"❓ {q}", callback_data=f"faq_show_{f['id']}"))
+    markup.add(InlineKeyboardButton("📞 Still need help?", callback_data="support"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main"))
     safe_navigate(call, text, markup)
 
 def show_faq_answer(call, faq_id):
@@ -1601,8 +1607,8 @@ def show_faq_answer(call, faq_id):
         return
     text = f"❓ <b>{esc(f['question'])}</b>\n━━━━━━━━━━━━━━━\n\n{esc(f['answer'])}"
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("◀️ Back to FAQ", callback_data="faq_menu", style="primary"))
-    markup.add(InlineKeyboardButton("📞 Support", callback_data="support", style="success"))
+    markup.add(InlineKeyboardButton("◀️ Back to FAQ", callback_data="faq_menu"))
+    markup.add(InlineKeyboardButton("📞 Support", callback_data="support"))
     safe_navigate(call, text, markup)
 
 # ============ CSV EXPORT ============
@@ -1654,7 +1660,7 @@ def show_admin_logs(call):
     cursor.close()
     conn.close()
     if not logs:
-        safe_navigate(call, "📝 <b>ADMIN LOGS</b>\n━━━━━━━━━━━━━━━\n\nAbhi tak koi activity nahi.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_settings", style="danger")))
+        safe_navigate(call, "📝 <b>ADMIN LOGS</b>\n━━━━━━━━━━━━━━━\n\nAbhi tak koi activity nahi.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_settings")))
         return
     text = "📝 <b>ADMIN LOGS (last 20)</b>\n━━━━━━━━━━━━━━━\n\n"
     for l in logs:
@@ -1666,7 +1672,7 @@ def show_admin_logs(call):
             break
         text += entry
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_settings", style="danger"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_settings"))
     safe_navigate(call, text, markup)
 
 # ============ START ============
@@ -1704,7 +1710,7 @@ def send_welcome(message):
     update_last_active(uid)
     if is_bot_maintenance() and uid not in get_admin_ids():
         markup = InlineKeyboardMarkup(row_width=1)
-        markup.add(InlineKeyboardButton("🔄 Check Again", callback_data="check_maintenance", style="primary"))
+        markup.add(InlineKeyboardButton("🔄 Check Again", callback_data="check_maintenance"))
         safe_send(message.chat.id, "🔧 <b>BOT UNDER MAINTENANCE</b>\n\n━━━━━━━━━━━━━━━\n\n⚠️ Bot abhi maintenance mein hai.\n\nJald hi wapas aa jayega!\n\n━━━━━━━━━━━━━━━\n\n⏳ Thodi der baad try karo.", markup)
         return
     if is_verified(uid):
@@ -1728,7 +1734,7 @@ def handle_contact(message):
         safe_send(message.chat.id, "✅ Verified!", markup)
         if is_bot_maintenance() and user_id not in get_admin_ids():
             m = InlineKeyboardMarkup(row_width=1)
-            m.add(InlineKeyboardButton("🔄 Check Again", callback_data="check_maintenance", style="primary"))
+            m.add(InlineKeyboardButton("🔄 Check Again", callback_data="check_maintenance"))
             safe_send(message.chat.id, "🔧 <b>BOT UNDER MAINTENANCE</b>\n\n━━━━━━━━━━━━━━━\n\n⚠️ Bot abhi maintenance mein hai.\n\nJald hi wapas aa jayega!\n\n━━━━━━━━━━━━━━━", m)
             return
         safe_send(message.chat.id, get_welcome_text(user_id), get_main_menu(user_id))
@@ -1770,10 +1776,10 @@ def show_profile(call, user_id):
 
 📅 Joined: {user['joined_at'][:10] if user['joined_at'] else 'N/A'}"""
     markup = InlineKeyboardMarkup(row_width=2)
-    markup.add(InlineKeyboardButton("💰 Add Balance", callback_data="add_balance", style="success"), InlineKeyboardButton("📜 History", callback_data="history", style="primary"))
+    markup.add(InlineKeyboardButton("💰 Add Balance", callback_data="add_balance"), InlineKeyboardButton("📜 History", callback_data="history"))
     if not user["is_reseller"]:
-        markup.add(InlineKeyboardButton("🤝 Upgrade to Reseller", callback_data="reseller_info", style="success"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+        markup.add(InlineKeyboardButton("🤝 Upgrade to Reseller", callback_data="reseller_info"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main"))
     safe_navigate(call, text, markup)
 
 def show_products(call):
@@ -1806,10 +1812,10 @@ Pehle apna device type chunein, uske baad products dikhenge.
 
 👇 Apna panel select karo!"""
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("🤖 Android Root Panel", callback_data="category_root", style="primary"))
-    markup.add(InlineKeyboardButton("📱 Android Non Root Panel", callback_data="category_nonroot", style="primary"))
-    markup.add(InlineKeyboardButton("🍎 iPhone", callback_data="category_iphone", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+    markup.add(InlineKeyboardButton("🤖 Android Root Panel", callback_data="category_root"))
+    markup.add(InlineKeyboardButton("📱 Android Non Root Panel", callback_data="category_nonroot"))
+    markup.add(InlineKeyboardButton("🍎 iPhone", callback_data="category_iphone"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main"))
     safe_navigate(call, text, markup)
 
 def show_products_by_category(call, category):
@@ -1843,8 +1849,8 @@ Jald hi add kiya jayega!
 
 ━━━━━━━━━━━━━━━━━━━━━"""
         markup = InlineKeyboardMarkup(row_width=1)
-        markup.add(InlineKeyboardButton("🔔 Notify Me", callback_data=f"notify_category_{category}", style="primary"))
-        markup.add(InlineKeyboardButton("◀️ Back", callback_data="shop_now", style="danger"))
+        markup.add(InlineKeyboardButton("🔔 Notify Me", callback_data=f"notify_category_{category}"))
+        markup.add(InlineKeyboardButton("◀️ Back", callback_data="shop_now"))
         safe_navigate(call, text, markup)
         return
     text = f"""{cat_name} — SELECT A PRODUCT
@@ -1857,10 +1863,10 @@ Choose any product below to view its price and available duration plans.
     markup = InlineKeyboardMarkup(row_width=1)
     for p in products:
         if p["status"] == "maintenance":
-            markup.add(InlineKeyboardButton(f"🔧 {p['name']} (Maintenance)", callback_data=f"product_{p['id']}", style="danger"))
+            markup.add(InlineKeyboardButton(f"🔧 {p['name']} (Maintenance)", callback_data=f"product_{p['id']}"))
         else:
-            markup.add(InlineKeyboardButton(f"{p['name']}", callback_data=f"product_{p['id']}", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="shop_now", style="danger"))
+            markup.add(InlineKeyboardButton(f"{p['name']}", callback_data=f"product_{p['id']}"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="shop_now"))
     safe_navigate(call, text, markup)
 
 def notify_category(call, category):
@@ -1881,7 +1887,7 @@ def show_product_plans(call, product_id, reseller_mode=False):
     if ps and ps["status"] == 'maintenance':
         cursor.close()
         conn.close()
-        safe_navigate(call, f"🔧 UNDER MAINTENANCE\n\n{esc(ps['name'])}\n\n⚠️ Yeh product abhi maintenance pe hai.", InlineKeyboardMarkup().add(InlineKeyboardButton("🔔 Notify Me", callback_data=f"notify_{product_id}", style="primary"), InlineKeyboardButton("◀️ Back", callback_data=f"category_{ps['category']}", style="danger")))
+        safe_navigate(call, f"🔧 UNDER MAINTENANCE\n\n{esc(ps['name'])}\n\n⚠️ Yeh product abhi maintenance pe hai.", InlineKeyboardMarkup().add(InlineKeyboardButton("🔔 Notify Me", callback_data=f"notify_{product_id}"), InlineKeyboardButton("◀️ Back", callback_data=f"category_{ps['category']}")))
         return
     cursor.execute("SELECT id, duration, price, reseller_price FROM plans WHERE product_id=?", (product_id,))
     plans = cursor.fetchall()
@@ -1903,16 +1909,16 @@ def show_product_plans(call, product_id, reseller_mode=False):
         dtext = pl["duration"]
         # BUG #21 FIX: reseller price NULL — show normal + tag it's not reseller
         if reseller_mode and pl["reseller_price"] is not None:
-            markup.add(InlineKeyboardButton(f"⭐ {dtext} | ₹{pl['reseller_price']}", callback_data=f"buy_{product_id}_{pl['id']}", style="success"))
+            markup.add(InlineKeyboardButton(f"⭐ {dtext} | ₹{pl['reseller_price']}", callback_data=f"buy_{product_id}_{pl['id']}"))
         elif reseller_mode and pl["reseller_price"] is None:
-            markup.add(InlineKeyboardButton(f"⏰ {dtext} | ₹{pl['price']} (no reseller price)", callback_data=f"buy_{product_id}_{pl['id']}", style="success"))
+            markup.add(InlineKeyboardButton(f"⏰ {dtext} | ₹{pl['price']} (no reseller price)", callback_data=f"buy_{product_id}_{pl['id']}"))
         else:
-            markup.add(InlineKeyboardButton(f"⏰ {dtext} | ₹{pl['price']}", callback_data=f"buy_{product_id}_{pl['id']}", style="success"))
+            markup.add(InlineKeyboardButton(f"⏰ {dtext} | ₹{pl['price']}", callback_data=f"buy_{product_id}_{pl['id']}"))
     if product["demo_video"]:
-        markup.add(InlineKeyboardButton("📺 Demo Video", callback_data=f"demo_{product_id}", style="primary"))
+        markup.add(InlineKeyboardButton("📺 Demo Video", callback_data=f"demo_{product_id}"))
     if product["download_link"]:
-        markup.add(InlineKeyboardButton("📥 Download Files", url=product["download_link"], style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data=f"category_{product['category']}", style="danger"))
+        markup.add(InlineKeyboardButton("📥 Download Files", url=product["download_link"]))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data=f"category_{product['category']}"))
     safe_navigate(call, text, markup)
 
 def show_demo_video(call, product_id):
@@ -1928,17 +1934,26 @@ def show_demo_video(call, product_id):
     demo = product["demo_video"].strip()
     try:
         if "t.me/c/" in demo:
-            parts = demo.replace("https://t.me/c/", "").split("/")
+            parts = demo.replace("https://t.me/c/", "").replace("http://t.me/c/", "").split("/")
             chat_id = f"-100{parts[0]}"
             message_id = int(parts[1])
-        else:
-            parts = demo.replace("https://t.me/", "").split("/")
+            bot.forward_message(call.message.chat.id, chat_id, message_id)
+            markup = InlineKeyboardMarkup(row_width=2)
+            markup.add(InlineKeyboardButton("🛒 BUY NOW", callback_data=f"product_{product_id}"), InlineKeyboardButton("◀️ BACK", callback_data=f"product_{product_id}"))
+            bot.send_message(call.message.chat.id, f"<b>{esc(product['name'])}</b>\n\n🔥 Dekho aur purchase karo!", parse_mode="HTML", reply_markup=markup)
+        elif "t.me/" in demo:
+            parts = demo.replace("https://t.me/", "").replace("http://t.me/", "").split("/")
             chat_id = f"@{parts[0]}"
             message_id = int(parts[1])
-        bot.forward_message(call.message.chat.id, chat_id, message_id)
-        markup = InlineKeyboardMarkup(row_width=2)
-        markup.add(InlineKeyboardButton("🛒 BUY NOW", callback_data=f"product_{product_id}", style="success"), InlineKeyboardButton("◀️ BACK", callback_data=f"product_{product_id}", style="danger"))
-        bot.send_message(call.message.chat.id, f"<b>{esc(product['name'])}</b>\n\n🔥 Dekho aur purchase karo!", parse_mode="HTML", reply_markup=markup)
+            bot.forward_message(call.message.chat.id, chat_id, message_id)
+            markup = InlineKeyboardMarkup(row_width=2)
+            markup.add(InlineKeyboardButton("🛒 BUY NOW", callback_data=f"product_{product_id}"), InlineKeyboardButton("◀️ BACK", callback_data=f"product_{product_id}"))
+            bot.send_message(call.message.chat.id, f"<b>{esc(product['name'])}</b>\n\n🔥 Dekho aur purchase karo!", parse_mode="HTML", reply_markup=markup)
+        else:
+            markup = InlineKeyboardMarkup(row_width=2)
+            markup.add(InlineKeyboardButton("▶️ Watch Demo", url=demo))
+            markup.add(InlineKeyboardButton("🛒 BUY NOW", callback_data=f"product_{product_id}"), InlineKeyboardButton("◀️ BACK", callback_data=f"product_{product_id}"))
+            bot.send_message(call.message.chat.id, f"<b>{esc(product['name'])}</b>\n\n🔥 Dekho aur purchase karo!", parse_mode="HTML", reply_markup=markup)
         bot.answer_callback_query(call.id)
     except Exception as e:
         logger.error(f"demo video error: {e}")
@@ -1949,7 +1964,7 @@ def show_order_confirmation(call, product_id, plan_id):
     user_id = call.from_user.id
     if is_bot_maintenance() and user_id not in get_admin_ids():
         bot.answer_callback_query(call.id, "🔧 Bot maintenance mein hai!", show_alert=True)
-        safe_navigate(call, "🔧 <b>BOT UNDER MAINTENANCE</b>\n\n━━━━━━━━━━━━━━━\n\n⚠️ Bot abhi maintenance mein hai.\n\nKoi bhi purchase abhi nahi ho sakti.\n\n━━━━━━━━━━━━━━━", InlineKeyboardMarkup().add(InlineKeyboardButton("🔄 Check Again", callback_data="check_maintenance", style="primary")))
+        safe_navigate(call, "🔧 <b>BOT UNDER MAINTENANCE</b>\n\n━━━━━━━━━━━━━━━\n\n⚠️ Bot abhi maintenance mein hai.\n\nKoi bhi purchase abhi nahi ho sakti.\n\n━━━━━━━━━━━━━━━", InlineKeyboardMarkup().add(InlineKeyboardButton("🔄 Check Again", callback_data="check_maintenance")))
         return
     conn = get_db()
     cursor = conn.cursor()
@@ -1986,7 +2001,7 @@ def show_order_confirmation(call, product_id, plan_id):
     final_price = max(0, price - total_discount)
     text = f"🛒 <b>ORDER CONFIRMATION</b>\n\n{esc(product['name'])}\n⏰ {esc(dtext)}\n\n💰 Original: ₹{price}{discount_text}\n\n✅ Final: ₹{final_price}\n\n💵 Balance: ₹{user['balance'] if user else 0}"
     markup = InlineKeyboardMarkup(row_width=2)
-    markup.add(InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{product_id}_{plan_id}", style="success"), InlineKeyboardButton("❌ Cancel", callback_data=f"product_{product_id}", style="danger"))
+    markup.add(InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{product_id}_{plan_id}"), InlineKeyboardButton("❌ Cancel", callback_data=f"product_{product_id}"))
     safe_navigate(call, text, markup)
 
 # BUG #1, #28 FIX: balance locked first, then API call, on fail refund
@@ -1995,7 +2010,7 @@ def process_purchase(call, product_id, plan_id):
     user_id = call.from_user.id
     if is_bot_maintenance() and user_id not in get_admin_ids():
         bot.answer_callback_query(call.id, "🔧 Bot maintenance mein hai! Purchase abhi band hai.", show_alert=True)
-        safe_navigate(call, "🔧 <b>BOT UNDER MAINTENANCE</b>\n\n━━━━━━━━━━━━━━━\n\n⚠️ Bot abhi maintenance mein hai.\n\nKoi bhi purchase abhi nahi ho sakti.\n\n━━━━━━━━━━━━━━━", InlineKeyboardMarkup().add(InlineKeyboardButton("🔄 Check Again", callback_data="check_maintenance", style="primary")))
+        safe_navigate(call, "🔧 <b>BOT UNDER MAINTENANCE</b>\n\n━━━━━━━━━━━━━━━\n\n⚠️ Bot abhi maintenance mein hai.\n\nKoi bhi purchase abhi nahi ho sakti.\n\n━━━━━━━━━━━━━━━", InlineKeyboardMarkup().add(InlineKeyboardButton("🔄 Check Again", callback_data="check_maintenance")))
         return
 
     # ===== PHASE 1: fetch + validate =====
@@ -2039,8 +2054,8 @@ def process_purchase(call, product_id, plan_id):
                 f"✅ <b>Aapka balance safe hai — koi paisa nahi kata.</b>\n\n"
                 f"📞 Support se contact karo ya baad mein try karo.",
                 InlineKeyboardMarkup().add(
-                    InlineKeyboardButton("📞 Support", callback_data="support", style="success"),
-                    InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger")
+                    InlineKeyboardButton("📞 Support", callback_data="support"),
+                    InlineKeyboardButton("◀️ Back", callback_data="back_main")
                 )
             )
             return
@@ -2158,11 +2173,11 @@ def process_purchase(call, product_id, plan_id):
 ⚠️ Key pe click karo—copy ho jayegi!"""
         markup = InlineKeyboardMarkup(row_width=1)
         if product["download_link"]:
-            markup.add(InlineKeyboardButton("📥 Download Files", url=product["download_link"], style="primary"))
+            markup.add(InlineKeyboardButton("📥 Download Files", url=product["download_link"]))
         if product["demo_video"]:
-            markup.add(InlineKeyboardButton("📺 Demo Video", url=product["demo_video"], style="primary"))
-        markup.add(InlineKeyboardButton("⭐ Rate", callback_data=f"review_{product_id}_5", style="success"))
-        markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+            markup.add(InlineKeyboardButton("📺 Demo Video", url=product["demo_video"]))
+        markup.add(InlineKeyboardButton("⭐ Rate", callback_data=f"review_{product_id}_5"))
+        markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main"))
         try:
             bot.send_photo(call.message.chat.id, SUCCESS_IMG, caption=caption, parse_mode="HTML", reply_markup=markup)
         except Exception:
@@ -2192,7 +2207,7 @@ def process_purchase(call, product_id, plan_id):
         cursor.close()
         conn.close()
     bot.answer_callback_query(call.id, f"❌ {error_msg}", show_alert=True)
-    safe_send(call.message.chat.id, f"❌ <b>OUT OF STOCK</b>\n\n{esc(product['name'])}\n\n⚠️ {esc(error_msg)}\n\n✅ <b>Aapka balance safe hai — koi paisa nahi kata.</b>\n\n🔔 Jab stock wapas aayega, aapko notify kiya jayega.", InlineKeyboardMarkup().add(InlineKeyboardButton("🔔 Notify Me", callback_data=f"notify_{product_id}", style="primary"), InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger")))
+    safe_send(call.message.chat.id, f"❌ <b>OUT OF STOCK</b>\n\n{esc(product['name'])}\n\n⚠️ {esc(error_msg)}\n\n✅ <b>Aapka balance safe hai — koi paisa nahi kata.</b>\n\n🔔 Jab stock wapas aayega, aapko notify kiya jayega.", InlineKeyboardMarkup().add(InlineKeyboardButton("🔔 Notify Me", callback_data=f"notify_{product_id}"), InlineKeyboardButton("◀️ Back", callback_data="back_main")))
 
 # BUG #30 FIX: INSERT OR IGNORE — unique constraint prevents dupes
 def notify_me(call, product_id):
@@ -2229,7 +2244,7 @@ def show_history(call, user_id, page=0):
 
 ━━━━━━━━━━━━━━━"""
         markup = InlineKeyboardMarkup(row_width=2)
-        markup.add(InlineKeyboardButton("🛒 Shop Key", callback_data="shop_now", style="danger"), InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+        markup.add(InlineKeyboardButton("🛒 Shop Key", callback_data="shop_now"), InlineKeyboardButton("◀️ Back", callback_data="back_main"))
         safe_navigate(call, text, markup)
         return
     total_pages = max(1, (total + PER_PAGE - 1) // PER_PAGE)
@@ -2239,12 +2254,12 @@ def show_history(call, user_id, page=0):
     markup = InlineKeyboardMarkup(row_width=3)
     nav_buttons = []
     if page > 0:
-        nav_buttons.append(InlineKeyboardButton("⬅️ Prev", callback_data=f"history_page_{page - 1}", style="primary"))
+        nav_buttons.append(InlineKeyboardButton("⬅️ Prev", callback_data=f"history_page_{page - 1}"))
     if page < total_pages - 1:
-        nav_buttons.append(InlineKeyboardButton("Next ➡️", callback_data=f"history_page_{page + 1}", style="primary"))
+        nav_buttons.append(InlineKeyboardButton("Next ➡️", callback_data=f"history_page_{page + 1}"))
     if nav_buttons:
         markup.add(*nav_buttons)
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main"))
     safe_navigate(call, text, markup)
 
 def show_add_balance_menu(call):
@@ -2256,20 +2271,20 @@ def show_add_balance_menu(call):
 
 ━━━━━━━━━━━━━━━"""
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("📱 Manual Deposit", callback_data="manual_deposit", style="success"))
-    markup.add(InlineKeyboardButton("⚡ Fam Pay (Instant Credit)", callback_data="auto_pay", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+    markup.add(InlineKeyboardButton("📱 Manual Deposit", callback_data="manual_deposit"))
+    markup.add(InlineKeyboardButton("⚡ Fam Pay (Instant Credit)", callback_data="auto_pay"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main"))
     safe_navigate(call, text, markup)
 
 def show_keypad(call, user_id, amount):
     min_deposit = get_setting("min_deposit", 500)
     is_new = is_new_user(user_id)
     markup = InlineKeyboardMarkup(row_width=3)
-    markup.add(InlineKeyboardButton("1", callback_data="pad_1", style="primary"), InlineKeyboardButton("2", callback_data="pad_2", style="primary"), InlineKeyboardButton("3", callback_data="pad_3", style="primary"))
-    markup.add(InlineKeyboardButton("4", callback_data="pad_4", style="primary"), InlineKeyboardButton("5", callback_data="pad_5", style="primary"), InlineKeyboardButton("6", callback_data="pad_6", style="primary"))
-    markup.add(InlineKeyboardButton("7", callback_data="pad_7", style="primary"), InlineKeyboardButton("8", callback_data="pad_8", style="primary"), InlineKeyboardButton("9", callback_data="pad_9", style="primary"))
-    markup.add(InlineKeyboardButton("⌫", callback_data="pad_backspace", style="danger"), InlineKeyboardButton("0", callback_data="pad_0", style="primary"), InlineKeyboardButton("✅", callback_data="pad_enter", style="success"))
-    markup.add(InlineKeyboardButton("❌ Cancel", callback_data="back_main", style="danger"))
+    markup.add(InlineKeyboardButton("1", callback_data="pad_1"), InlineKeyboardButton("2", callback_data="pad_2"), InlineKeyboardButton("3", callback_data="pad_3"))
+    markup.add(InlineKeyboardButton("4", callback_data="pad_4"), InlineKeyboardButton("5", callback_data="pad_5"), InlineKeyboardButton("6", callback_data="pad_6"))
+    markup.add(InlineKeyboardButton("7", callback_data="pad_7"), InlineKeyboardButton("8", callback_data="pad_8"), InlineKeyboardButton("9", callback_data="pad_9"))
+    markup.add(InlineKeyboardButton("⌫", callback_data="pad_backspace"), InlineKeyboardButton("0", callback_data="pad_0"), InlineKeyboardButton("✅", callback_data="pad_enter"))
+    markup.add(InlineKeyboardButton("❌ Cancel", callback_data="back_main"))
     text = f"💰 <b>ADD BALANCE</b>\n\n━━━━━━━━━━━━━━━\n\n💳 Enter Amount:\n\n₹ {amount if amount else '0'}\n\n━━━━━━━━━━━━━━━"
     if is_new:
         text += f"\n\n⚠️ New user? Pehli baar ₹{min_deposit} minimum\n   deposit karna padega.\n\n❌ ₹{min_deposit} se kam raha toh payment\n   cancel ho jayega.\n\n━━━━━━━━━━━━━━━"
@@ -2303,13 +2318,13 @@ def handle_keypad(call, data, user_id):
 
 # BUG #8 FIX: don't leave orphan pending_payments if QR send fails
 def generate_qr(call, amount, user_id):
-    qr_api = f"{FAMPAY_QR_URL}?upi={FAMPAY_UPI_ID}&amount={amount}"
+    qr_api = f"{FAMPAY_QR_URL}?api_key={FAMPAY_API_KEY}&amount={amount}"
     try:
         req = urllib.request.Request(qr_api, headers={'User-Agent': 'Mozilla/5.0'})
         raw = urllib.request.urlopen(req, timeout=20).read().decode()
         res = json.loads(raw)
         if str(res.get("status", "")).lower() != "success":
-            raise ValueError("QR API failed")
+            raise ValueError(res.get("message") or "QR API failed")
         data = res.get("data", {})
         qr_url = data.get("qr_url")
         order_id = data.get("order_id")
@@ -2333,7 +2348,7 @@ def generate_qr(call, amount, user_id):
             f"Max 10 minutes mein credit hoga."
         )
         markup = InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("❌ Cancel", callback_data=f"cancel_qr_{order_id}", style="danger"))
+        markup.add(InlineKeyboardButton("❌ Cancel", callback_data=f"cancel_qr_{order_id}"))
         try:
             bot.send_photo(call.message.chat.id, qr_url, caption=caption, parse_mode="HTML", reply_markup=markup)
         except Exception as e:
@@ -2345,7 +2360,7 @@ def generate_qr(call, amount, user_id):
             conn.commit()
             cursor.close()
             conn.close()
-            safe_send(call.message.chat.id, "❌ QR generate hua par bhej nahi paye. Dobara try karo.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="add_balance", style="danger")))
+            safe_send(call.message.chat.id, "❌ QR generate hua par bhej nahi paye. Dobara try karo.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="add_balance")))
     except Exception as e:
         logger.error(f"generate_qr error: {e}")
         bot.answer_callback_query(call.id, "❌ Error", show_alert=True)
@@ -2367,8 +2382,8 @@ def show_manual_deposit(call):
     if is_new:
         text += f"\n\n⚠️ New user? Pehli baar ₹{min_deposit} minimum\n   deposit karna padega.\n\n━━━━━━━━━━━━━━━"
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("📸 SEND PROOF", callback_data="manual_proof", style="success"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="add_balance", style="danger"))
+    markup.add(InlineKeyboardButton("📸 SEND PROOF", callback_data="manual_proof"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="add_balance"))
     if qr_file_id:
         try:
             bot.delete_message(call.message.chat.id, call.message.message_id)
@@ -2414,7 +2429,7 @@ jisse koi bhi product khareed sakte ho!
 
 ━━━━━━━━━━━━━━━"""
     markup = InlineKeyboardMarkup(row_width=2)
-    markup.add(InlineKeyboardButton(f"✅ JOIN NOW - ₹{fee}", callback_data="join_reseller", style="success"), InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+    markup.add(InlineKeyboardButton(f"✅ JOIN NOW - ₹{fee}", callback_data="join_reseller"), InlineKeyboardButton("◀️ Back", callback_data="back_main"))
     safe_navigate(call, text, markup)
 
 # BUG #11 FIX: notify_admins failure is logged (not silent)
@@ -2434,7 +2449,7 @@ def join_reseller(call):
             bot.answer_callback_query(call.id, "Already reseller!", show_alert=True)
             return
         if user["balance"] < min_balance:
-            safe_navigate(call, f"❌ Minimum ₹{min_balance} balance chahiye.\n\nAapka balance: ₹{user['balance']}", InlineKeyboardMarkup().add(InlineKeyboardButton("💰 Add Balance", callback_data="add_balance", style="success"), InlineKeyboardButton("◀️ Back", callback_data="reseller_info", style="danger")))
+            safe_navigate(call, f"❌ Minimum ₹{min_balance} balance chahiye.\n\nAapka balance: ₹{user['balance']}", InlineKeyboardMarkup().add(InlineKeyboardButton("💰 Add Balance", callback_data="add_balance"), InlineKeyboardButton("◀️ Back", callback_data="reseller_info")))
             return
         try:
             cursor.execute("BEGIN IMMEDIATE")
@@ -2453,7 +2468,7 @@ def join_reseller(call):
     finally:
         cursor.close()
         conn.close()
-    safe_navigate(call, "🎉 Reseller Active!\n\nAap ab reseller ban gaye hain! 🤝", InlineKeyboardMarkup().add(InlineKeyboardButton("🤝 Reseller Panel", callback_data="reseller_panel", style="success"), InlineKeyboardButton("◀️ Menu", callback_data="back_main", style="danger")))
+    safe_navigate(call, "🎉 Reseller Active!\n\nAap ab reseller ban gaye hain! 🤝", InlineKeyboardMarkup().add(InlineKeyboardButton("🤝 Reseller Panel", callback_data="reseller_panel"), InlineKeyboardButton("◀️ Menu", callback_data="back_main")))
     # BUG #11 FIX: wrap admin notify, log failure
     try:
         notify_admins(f"🤝 New Reseller!\n\n👤 {user_id}\n💰 ₹{fee}")
@@ -2463,7 +2478,7 @@ def join_reseller(call):
 def show_lucky_spin(call):
     user_id = call.from_user.id
     if is_reseller(user_id):
-        safe_navigate(call, "❌ <b>Spin Sirf Regular Users Ke Liye</b>\n\nAap reseller hain — aapko already discounted prices milte hain.\n\nSpin se aapko extra discount nahi milega.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger")))
+        safe_navigate(call, "❌ <b>Spin Sirf Regular Users Ke Liye</b>\n\nAap reseller hain — aapko already discounted prices milte hain.\n\nSpin se aapko extra discount nahi milega.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="back_main")))
         return
     time_left = get_spin_time_left(user_id)
     if time_left > 0:
@@ -2480,8 +2495,8 @@ def show_lucky_spin(call):
 
 ━━━━━━━━━━━━━━━"""
         markup = InlineKeyboardMarkup(row_width=1)
-        markup.add(InlineKeyboardButton("🔄 Refresh", callback_data="lucky_spin", style="primary"))
-        markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+        markup.add(InlineKeyboardButton("🔄 Refresh", callback_data="lucky_spin"))
+        markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main"))
         safe_navigate(call, text, markup)
         return
     text = """🎰 ━━ <b>CASH SPIN</b> ━━
@@ -2494,8 +2509,8 @@ def show_lucky_spin(call):
 
 👇 Spin karo aur luck try karo!"""
     markup = InlineKeyboardMarkup(row_width=2)
-    markup.add(InlineKeyboardButton("🎮 Spin Karo (FREE)", callback_data="spin_now", style="success"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+    markup.add(InlineKeyboardButton("🎮 Spin Karo (FREE)", callback_data="spin_now"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main"))
     safe_navigate(call, text, markup)
 
 def do_spin(call):
@@ -2591,8 +2606,8 @@ def do_spin(call):
                    f"━━━━━━━━━━━━━━━\n"
                    f"⏰ 24 Ghante baad phir spin milega!")
     markup = InlineKeyboardMarkup(row_width=2)
-    markup.add(InlineKeyboardButton("🛒 Shop Now", callback_data="shop_now", style="danger"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+    markup.add(InlineKeyboardButton("🛒 Shop Now", callback_data="shop_now"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main"))
     try:
         bot.edit_message_text(result_text, chat_id, msg_id, parse_mode="HTML", reply_markup=markup)
     except Exception:
@@ -2629,34 +2644,34 @@ Unki pehli purchase pe bonus guaranteed!
 
 ━━━━━━━━━━━━━━━"""
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("📤 Share Link", url=f"https://t.me/share/url?url={link}", style="success"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+    markup.add(InlineKeyboardButton("📤 Share Link", url=f"https://t.me/share/url?url={link}"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main"))
     safe_navigate(call, text, markup)
 
 def show_selling_proof(call):
     link = get_setting("selling_proof_link", "https://t.me/")
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("📸 Open Channel", url=link, style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+    markup.add(InlineKeyboardButton("📸 Open Channel", url=link))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main"))
     safe_navigate(call, "📸 SELLING PROOF", markup)
 
 def show_support_menu(call):
     name1 = get_setting("support_name_1", "Support")
     support_url = get_setting("support_url", "https://t.me/")
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton(f"👨‍💼 {name1}", url=support_url, style="primary"))
-    markup.add(InlineKeyboardButton("🎫 Create Ticket", callback_data="create_ticket", style="success"))
-    markup.add(InlineKeyboardButton("❓ FAQ", callback_data="faq_menu", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+    markup.add(InlineKeyboardButton(f"👨‍💼 {name1}", url=support_url))
+    markup.add(InlineKeyboardButton("🎫 Create Ticket", callback_data="create_ticket"))
+    markup.add(InlineKeyboardButton("❓ FAQ", callback_data="faq_menu"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main"))
     safe_navigate(call, "💬 <b>SUPPORT CENTER</b> 💬\n\n👋 Need Any Help?\n\n━━━━━━━━━━━━━━━\n\n💬 Purchase Support\n💳 Payment Issues\n🔑 Key Problems\n⚡ Instant Assistance\n\n━━━━━━━━━━━━━━━", markup)
 
 def show_tutorial_menu(call):
     video_link = get_setting("tutorial_video", "")
     markup = InlineKeyboardMarkup(row_width=1)
     if video_link:
-        markup.add(InlineKeyboardButton("▶️ Watch Tutorial Video", url=video_link, style="primary"))
-    markup.add(InlineKeyboardButton("📞 Support", callback_data="support", style="success"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger"))
+        markup.add(InlineKeyboardButton("▶️ Watch Tutorial Video", url=video_link))
+    markup.add(InlineKeyboardButton("📞 Support", callback_data="support"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="back_main"))
     text = """<b>HOW TO USE BOT</b>
 
 ━━━━━━━━━━━━━━━━━
@@ -2681,21 +2696,21 @@ def show_tutorial_menu(call):
 def show_tutorial_video_menu(call):
     video_link = get_setting("tutorial_video", "")
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("✏️ Change Link", callback_data="change_tutorial_video", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel", style="danger"))
+    markup.add(InlineKeyboardButton("✏️ Change Link", callback_data="change_tutorial_video"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel"))
     safe_navigate(call, f"🎬 TUTORIAL VIDEO\n\nCurrent Link: {esc(video_link) or 'N/A'}", markup)
 
 def request_review(call, product_id, rating):
     set_user_state(call.from_user.id, {"action": "review_screenshot", "product_id": product_id, "rating": rating})
-    safe_navigate(call, "📸 REVIEW SCREENSHOT\n\n━━━━━━━━━━━━━━━\n\nGameplay ka screenshot bhejo.\n\n━━━━━━━━━━━━━━━", InlineKeyboardMarkup().add(InlineKeyboardButton("⏭ Skip", callback_data="skip_review", style="danger")))
+    safe_navigate(call, "📸 REVIEW SCREENSHOT\n\n━━━━━━━━━━━━━━━\n\nGameplay ka screenshot bhejo.\n\n━━━━━━━━━━━━━━━", InlineKeyboardMarkup().add(InlineKeyboardButton("⏭ Skip", callback_data="skip_review")))
 
 def show_bot_maintenance_menu(call):
     status = get_setting("bot_maintenance", "off")
     status_text = "🔴 ON" if status == "on" else "🟢 OFF"
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("✅ ON Karo", callback_data="bot_maintenance_on", style="success"))
-    markup.add(InlineKeyboardButton("❌ OFF Karo", callback_data="bot_maintenance_off", style="danger"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel", style="danger"))
+    markup.add(InlineKeyboardButton("✅ ON Karo", callback_data="bot_maintenance_on"))
+    markup.add(InlineKeyboardButton("❌ OFF Karo", callback_data="bot_maintenance_off"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel"))
     safe_navigate(call, f"🔧 <b>BOT MAINTENANCE</b>\n\n━━━━━━━━━━━━━━━\n\nCurrent Status: {status_text}\n\n━━━━━━━━━━━━━━━", markup)
 
 def show_manage_admins(call):
@@ -2705,10 +2720,10 @@ def show_manage_admins(call):
     text += f"1️⃣ 👑 Admin 1 (Main) - ID: {ADMIN_USER_ID}\n\n"
     for i, admin_id in enumerate(admin_ids[1:], start=2):
         text += f"{i}️⃣ Admin {i} - ID: {admin_id}\n\n"
-        markup.add(InlineKeyboardButton(f"➖ Remove Admin {i}", callback_data=f"remove_specific_admin_{admin_id}", style="danger"))
+        markup.add(InlineKeyboardButton(f"➖ Remove Admin {i}", callback_data=f"remove_specific_admin_{admin_id}"))
     text += "━━━━━━━━━━━━━━━"
-    markup.add(InlineKeyboardButton("➕ Add Admin", callback_data="add_admin", style="success"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel", style="danger"))
+    markup.add(InlineKeyboardButton("➕ Add Admin", callback_data="add_admin"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel"))
     safe_navigate(call, text, markup)
 
 def show_admin_dashboard(call):
@@ -2823,7 +2838,7 @@ def show_admin_dashboard(call):
 
 ━━━━━━━━━━━━━━━━━━━━━"""
     markup = InlineKeyboardMarkup(row_width=2)
-    markup.add(InlineKeyboardButton("🔄 Refresh", callback_data="admin_dashboard", style="primary"), InlineKeyboardButton("◀️ Back", callback_data="admin_panel", style="danger"))
+    markup.add(InlineKeyboardButton("🔄 Refresh", callback_data="admin_dashboard"), InlineKeyboardButton("◀️ Back", callback_data="admin_panel"))
     safe_navigate(call, text, markup)
 
 def show_admin_analytics(call):
@@ -2850,7 +2865,7 @@ def show_admin_top_products(call):
             text += f"{i}. {esc(r['product_name'])} — {r['c']} sold\n"
     text += "\n━━━━━━━━━━━━━━━"
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_analytics", style="danger"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_analytics"))
     safe_navigate(call, text, markup)
 
 def show_admin_user_growth(call):
@@ -2873,13 +2888,13 @@ def show_admin_user_growth(call):
 
 ━━━━━━━━━━━━━━━"""
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_analytics", style="danger"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_analytics"))
     safe_navigate(call, text, markup)
 
 def show_admin_revenue_report(call):
     show_admin_dashboard(call)
     
-    def show_manage_products(call):
+def show_manage_products(call):
     text = """📦 <b>MANAGE PRODUCTS</b>
 ━━━━━━━━━━━━━━━
 
@@ -2898,10 +2913,10 @@ def show_admin_revenue_report(call):
 
 ━━━━━━━━━━━━━━━"""
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("🤖 Root Panel", callback_data="manage_category_root", style="primary"))
-    markup.add(InlineKeyboardButton("📱 Non-Root Panel", callback_data="manage_category_nonroot", style="primary"))
-    markup.add(InlineKeyboardButton("🍎 iPhone Panel", callback_data="manage_category_iphone", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_products", style="danger"))
+    markup.add(InlineKeyboardButton("🤖 Root Panel", callback_data="manage_category_root"))
+    markup.add(InlineKeyboardButton("📱 Non-Root Panel", callback_data="manage_category_nonroot"))
+    markup.add(InlineKeyboardButton("🍎 iPhone Panel", callback_data="manage_category_iphone"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_products"))
     safe_navigate(call, text, markup)
 
 def show_manage_products_by_category(call, category):
@@ -2912,7 +2927,7 @@ def show_manage_products_by_category(call, category):
     cursor.close()
     conn.close()
     if not products:
-        safe_navigate(call, f"❌ No {category.upper()} products.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_products", style="danger")))
+        safe_navigate(call, f"❌ No {category.upper()} products.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_products")))
         return
     category_name = get_category_name(category)
     text = f"<b>MANAGE {category_name} PRODUCTS</b>\n\n"
@@ -2921,8 +2936,8 @@ def show_manage_products_by_category(call, category):
         status = "🔧 Maintenance" if p["status"] == "maintenance" else "✅ Active"
         api_pid = p["api_pid"] or "❌ No PID"
         text += f"<b>{esc(p['name'])}</b>\n📊 {status}\n🔗 PID: <code>{esc(api_pid)}</code>\n\n"
-        markup.add(InlineKeyboardButton(f"{p['name']}", callback_data=f"manage_product_{p['id']}", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_products", style="danger"))
+        markup.add(InlineKeyboardButton(f"{p['name']}", callback_data=f"manage_product_{p['id']}"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_products"))
     safe_navigate(call, text, markup)
 
 def show_product_management_menu(call, product_id):
@@ -2958,12 +2973,12 @@ def show_product_management_menu(call, product_id):
     for i in range(0, len(buttons), 2):
         if i + 1 < len(buttons):
             markup.add(
-                InlineKeyboardButton(buttons[i][0], callback_data=buttons[i][1], style=buttons[i][2]),
-                InlineKeyboardButton(buttons[i+1][0], callback_data=buttons[i+1][1], style=buttons[i+1][2])
+                InlineKeyboardButton(buttons[i][0], callback_data=buttons[i][1]),
+                InlineKeyboardButton(buttons[i+1][0], callback_data=buttons[i+1][1])
             )
         else:
-            markup.add(InlineKeyboardButton(buttons[i][0], callback_data=buttons[i][1], style=buttons[i][2]))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_products", style="danger"))
+            markup.add(InlineKeyboardButton(buttons[i][0], callback_data=buttons[i][1]))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_products"))
     text = f"""<b>PRODUCT MANAGEMENT</b>
 
 ━━━━━━━━━━━━━━━━━━━
@@ -2987,16 +3002,16 @@ def show_plans_management(call, product_id):
     conn.close()
     if not plans:
         markup = InlineKeyboardMarkup(row_width=1)
-        markup.add(InlineKeyboardButton("📅 Add Plan", callback_data=f"add_plan_menu_{product_id}", style="success"))
-        markup.add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{product_id}", style="danger"))
+        markup.add(InlineKeyboardButton("📅 Add Plan", callback_data=f"add_plan_menu_{product_id}"))
+        markup.add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{product_id}"))
         safe_navigate(call, "⚠️ No plans.", markup)
         return
     markup = InlineKeyboardMarkup(row_width=1)
     for pl in plans:
-        markup.add(InlineKeyboardButton(f"✏️ {pl['duration']} | ₹{pl['price']}", callback_data=f"edit_plan_{pl['id']}", style="primary"))
-        markup.add(InlineKeyboardButton(f"🗑️ {pl['duration']}", callback_data=f"del_plan_{pl['id']}", style="danger"))
-    markup.add(InlineKeyboardButton("📅 Add Plan", callback_data=f"add_plan_menu_{product_id}", style="success"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{product_id}", style="danger"))
+        markup.add(InlineKeyboardButton(f"✏️ {pl['duration']} | ₹{pl['price']}", callback_data=f"edit_plan_{pl['id']}"))
+        markup.add(InlineKeyboardButton(f"🗑️ {pl['duration']}", callback_data=f"del_plan_{pl['id']}"))
+    markup.add(InlineKeyboardButton("📅 Add Plan", callback_data=f"add_plan_menu_{product_id}"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{product_id}"))
     safe_navigate(call, "📋 MANAGE PLANS", markup)
 
 def show_plan_edit_menu(call, plan_id):
@@ -3010,9 +3025,9 @@ def show_plan_edit_menu(call, plan_id):
         bot.answer_callback_query(call.id, "❌ Not found", show_alert=True)
         return
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("💰 Edit Price", callback_data=f"edit_plan_price_{plan_id}", style="primary"))
-    markup.add(InlineKeyboardButton("⏰ Edit Duration", callback_data=f"edit_plan_duration_{plan_id}", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_products", style="danger"))
+    markup.add(InlineKeyboardButton("💰 Edit Price", callback_data=f"edit_plan_price_{plan_id}"))
+    markup.add(InlineKeyboardButton("⏰ Edit Duration", callback_data=f"edit_plan_duration_{plan_id}"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_products"))
     safe_navigate(call, f"✏️ EDIT PLAN\n\n{esc(plan['name'])}\n⏰ {esc(plan['duration'])}\n💰 ₹{plan['price']}", markup)
 
 def delete_plan(call, plan_id):
@@ -3093,7 +3108,7 @@ def show_maintenance_products(call):
     cursor.close()
     conn.close()
     if not products:
-        safe_navigate(call, "✅ No maintenance products.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_products", style="danger")))
+        safe_navigate(call, "✅ No maintenance products.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_products")))
         return
     text = """🔧 <b>MAINTENANCE PRODUCTS</b>
 
@@ -3105,9 +3120,9 @@ def show_maintenance_products(call):
     for p in products:
         cat = cat_map.get(p["category"], p["category"].upper())
         text += f"🔧 {esc(p['name'])}\n📂 {cat}\n\n"
-        markup.add(InlineKeyboardButton(f"✅ Remove Maintenance - {p['name']}", callback_data=f"remove_maint_{p['id']}", style="success"))
+        markup.add(InlineKeyboardButton(f"✅ Remove Maintenance - {p['name']}", callback_data=f"remove_maint_{p['id']}"))
     text += "━━━━━━━━━━━━━━━"
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel", style="danger"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel"))
     safe_navigate(call, text, markup)
 
 def show_add_product_category(call):
@@ -3128,10 +3143,10 @@ def show_add_product_category(call):
 
 ━━━━━━━━━━━━━━━"""
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("🤖 Root", callback_data="add_product_root", style="primary"))
-    markup.add(InlineKeyboardButton("📱 Non-Root", callback_data="add_product_nonroot", style="primary"))
-    markup.add(InlineKeyboardButton("🍎 iPhone", callback_data="add_product_iphone", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_products", style="danger"))
+    markup.add(InlineKeyboardButton("🤖 Root", callback_data="add_product_root"))
+    markup.add(InlineKeyboardButton("📱 Non-Root", callback_data="add_product_nonroot"))
+    markup.add(InlineKeyboardButton("🍎 iPhone", callback_data="add_product_iphone"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_products"))
     safe_navigate(call, text, markup)
 
 def show_deposit_requests(call):
@@ -3142,7 +3157,7 @@ def show_deposit_requests(call):
     if not deposits:
         cursor.close()
         conn.close()
-        safe_navigate(call, "💰 No pending.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel", style="danger")))
+        safe_navigate(call, "💰 No pending.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel")))
         return
     user_ids = [d["user_id"] for d in deposits]
     placeholders = ",".join("?" * len(user_ids))
@@ -3166,8 +3181,8 @@ def show_deposit_requests(call):
         phone = info.get("phone") or "N/A"
         uname = info.get("username") or "N/A"
         text += f"📌 <b>REQUEST {i}</b>\n👤 @{esc(uname)}\n🆔 User ID: {user_id}\n📱 Phone: {esc(phone)}\n💰 Amount: ₹{d['amount']}\n📝 UTR: {esc(d['utr'])}\n\n━━━━━━━━━━━━━━━━━━━━━\n\n"
-        markup.add(InlineKeyboardButton(f"👤 @{uname} - ₹{d['amount']}", callback_data=f"view_deposit_{d['id']}", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel", style="danger"))
+        markup.add(InlineKeyboardButton(f"👤 @{uname} - ₹{d['amount']}", callback_data=f"view_deposit_{d['id']}"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel"))
     safe_navigate(call, text, markup)
 
 # BUG #32 FIX: no double answer_callback_query
@@ -3199,10 +3214,10 @@ def show_deposit_detail(call, deposit_id):
 
 ━━━━━━━━━━━━━━━━━━━━━"""
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("✅ Approve", callback_data=f"approve_deposit_{deposit_id}", style="success"))
-    markup.add(InlineKeyboardButton("❌ Reject", callback_data=f"reject_deposit_{deposit_id}", style="danger"))
-    markup.add(InlineKeyboardButton("📩 DM User", url=f"tg://user?id={d['user_id']}", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_deposit_requests", style="danger"))
+    markup.add(InlineKeyboardButton("✅ Approve", callback_data=f"approve_deposit_{deposit_id}"))
+    markup.add(InlineKeyboardButton("❌ Reject", callback_data=f"reject_deposit_{deposit_id}"))
+    markup.add(InlineKeyboardButton("📩 DM User", url=f"tg://user?id={d['user_id']}"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_deposit_requests"))
     try:
         bot.delete_message(call.message.chat.id, call.message.message_id)
     except Exception:
@@ -3257,7 +3272,7 @@ def approve_deposit(call, deposit_id):
     bot.answer_callback_query(call.id, "✅ Approved!", show_alert=True)
 
 def show_reject_options(call, deposit_id):
-    safe_navigate(call, "❌ Reject?", InlineKeyboardMarkup().add(InlineKeyboardButton("📝 Reason", callback_data=f"reject_with_reason_{deposit_id}", style="primary"), InlineKeyboardButton("❌ No Reason", callback_data=f"reject_no_reason_{deposit_id}", style="danger")))
+    safe_navigate(call, "❌ Reject?", InlineKeyboardMarkup().add(InlineKeyboardButton("📝 Reason", callback_data=f"reject_with_reason_{deposit_id}"), InlineKeyboardButton("❌ No Reason", callback_data=f"reject_no_reason_{deposit_id}")))
 
 def reject_deposit_no_reason(call, deposit_id):
     conn = get_db()
@@ -3281,13 +3296,13 @@ def show_admin_tickets(call):
     cursor.close()
     conn.close()
     if not tickets:
-        safe_navigate(call, "🎫 No open tickets.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel", style="danger")))
+        safe_navigate(call, "🎫 No open tickets.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel")))
         return
     markup = InlineKeyboardMarkup(row_width=1)
     for t in tickets:
         pri = get_priority_emoji(t["priority"])
-        markup.add(InlineKeyboardButton(f"{pri} #{t['id']} - {t['subject'][:30]}", callback_data=f"view_ticket_{t['id']}", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel", style="danger"))
+        markup.add(InlineKeyboardButton(f"{pri} #{t['id']} - {t['subject'][:30]}", callback_data=f"view_ticket_{t['id']}"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel"))
     safe_navigate(call, f"🎫 Tickets (Priority Sorted)\n\nOpen: {len(tickets)}", markup)
 
 def show_ticket_detail(call, ticket_id):
@@ -3302,10 +3317,10 @@ def show_ticket_detail(call, ticket_id):
         return
     pri = get_priority_emoji(t["priority"])
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("💬 Reply", callback_data=f"reply_ticket_{ticket_id}", style="primary"))
-    markup.add(InlineKeyboardButton("📩 DM User", url=f"tg://user?id={t['user_id']}", style="primary"))
-    markup.add(InlineKeyboardButton("✅ Close", callback_data=f"close_ticket_{ticket_id}", style="success"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_tickets", style="danger"))
+    markup.add(InlineKeyboardButton("💬 Reply", callback_data=f"reply_ticket_{ticket_id}"))
+    markup.add(InlineKeyboardButton("📩 DM User", url=f"tg://user?id={t['user_id']}"))
+    markup.add(InlineKeyboardButton("✅ Close", callback_data=f"close_ticket_{ticket_id}"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_tickets"))
     safe_navigate(call, f"🎫 TICKET #{ticket_id}\n\n{pri} Priority: {t['priority'].upper()}\n👤 ID: {t['user_id']}\n\n📝 Subject: {esc(t['subject'])}\n💬 Message: {esc(t['message'])}", markup)
 
 def show_reviews(call):
@@ -3316,13 +3331,13 @@ def show_reviews(call):
     cursor.close()
     conn.close()
     if not reviews:
-        safe_navigate(call, "📸 No reviews.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel", style="danger")))
+        safe_navigate(call, "📸 No reviews.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel")))
         return
     text = "📸 <b>REVIEWS</b>\n\n"
     for r in reviews:
         stars = "⭐" * r["rating"]
         text += f"{stars} | 👤 {r['user_id']}\n📦 Product: {r['product_id']}\n\n"
-    safe_navigate(call, text, InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel", style="danger")))
+    safe_navigate(call, text, InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel")))
 
 def show_reseller_price_products(call):
     text = """🤝 ━━ <b>RESELLER PRICES</b> ━━
@@ -3342,10 +3357,10 @@ def show_reseller_price_products(call):
 
 ━━━━━━━━━━━━━━━"""
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("🤖 Root Panel", callback_data="reseller_category_root", style="primary"))
-    markup.add(InlineKeyboardButton("📱 Non-Root Panel", callback_data="reseller_category_nonroot", style="primary"))
-    markup.add(InlineKeyboardButton("🍎 iPhone Panel", callback_data="reseller_category_iphone", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_products", style="danger"))
+    markup.add(InlineKeyboardButton("🤖 Root Panel", callback_data="reseller_category_root"))
+    markup.add(InlineKeyboardButton("📱 Non-Root Panel", callback_data="reseller_category_nonroot"))
+    markup.add(InlineKeyboardButton("🍎 iPhone Panel", callback_data="reseller_category_iphone"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_products"))
     safe_navigate(call, text, markup)
 
 def show_reseller_price_products_by_category(call, category):
@@ -3356,14 +3371,14 @@ def show_reseller_price_products_by_category(call, category):
     cursor.close()
     conn.close()
     if not products:
-        safe_navigate(call, f"❌ No {category.upper()} products.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_reseller_prices", style="danger")))
+        safe_navigate(call, f"❌ No {category.upper()} products.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_reseller_prices")))
         return
     category_name = get_category_name(category)
     text = f"🤝 <b>RESELLER PRICES - {category_name}</b>\n\n"
     markup = InlineKeyboardMarkup(row_width=1)
     for p in products:
-        markup.add(InlineKeyboardButton(f"{p['name']}", callback_data=f"reseller_price_product_{p['id']}", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_reseller_prices", style="danger"))
+        markup.add(InlineKeyboardButton(f"{p['name']}", callback_data=f"reseller_price_product_{p['id']}"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_reseller_prices"))
     safe_navigate(call, text, markup)
 
 def show_reseller_price_plans(call, product_id):
@@ -3375,29 +3390,29 @@ def show_reseller_price_plans(call, product_id):
     conn.close()
     markup = InlineKeyboardMarkup(row_width=1)
     for pl in plans:
-        markup.add(InlineKeyboardButton(f"⏰ {pl['duration']} | ₹{pl['reseller_price'] or 'Not Set'}", callback_data=f"edit_reseller_price_{pl['id']}", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_reseller_prices", style="danger"))
+        markup.add(InlineKeyboardButton(f"⏰ {pl['duration']} | ₹{pl['reseller_price'] or 'Not Set'}", callback_data=f"edit_reseller_price_{pl['id']}"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_reseller_prices"))
     safe_navigate(call, "💰 Select plan:", markup)
 
 def show_reseller_fee_menu(call):
     fee = get_setting("reseller_fee", 399)
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("✏️ Change Fee", callback_data="change_reseller_fee", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_payments", style="danger"))
+    markup.add(InlineKeyboardButton("✏️ Change Fee", callback_data="change_reseller_fee"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_payments"))
     safe_navigate(call, f"🤝 RESELLER FEE\n\nCurrent Fee: ₹{fee}", markup)
 
 def show_min_balance_menu(call):
     min_balance = get_setting("reseller_min_balance", 2000)
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("✏️ Change Min Balance", callback_data="change_min_balance", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_payments", style="danger"))
+    markup.add(InlineKeyboardButton("✏️ Change Min Balance", callback_data="change_min_balance"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_payments"))
     safe_navigate(call, f"💳 MIN BALANCE\n\nCurrent: ₹{min_balance}", markup)
 
 def show_min_deposit_menu(call):
     min_dep = get_setting("min_deposit", 500)
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton("✏️ Change Amount", callback_data="change_min_deposit", style="primary"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_payments", style="danger"))
+    markup.add(InlineKeyboardButton("✏️ Change Amount", callback_data="change_min_deposit"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_payments"))
     safe_navigate(call, f"💰 MINIMUM DEPOSIT\n\nCurrent: ₹{min_dep}", markup)
 
 def show_support_contacts_menu(call):
@@ -3406,8 +3421,8 @@ def show_support_contacts_menu(call):
     name1 = get_setting("support_name_1", "Support")
     support_url = get_setting("support_url", "https://t.me//")
     text += f"1️⃣ {esc(name1)}\n🔗 {esc(support_url)}\n\n"
-    markup.add(InlineKeyboardButton("✏️ Edit Name", callback_data="edit_support_contact_default_1", style="primary"))
-    markup.add(InlineKeyboardButton("✏️ Edit URL", callback_data="edit_support_url", style="primary"))
+    markup.add(InlineKeyboardButton("✏️ Edit Name", callback_data="edit_support_contact_default_1"))
+    markup.add(InlineKeyboardButton("✏️ Edit URL", callback_data="edit_support_url"))
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM support_contacts")
@@ -3416,10 +3431,10 @@ def show_support_contacts_menu(call):
     conn.close()
     for i, c in enumerate(contacts):
         text += f"{i+2}️⃣ {esc(c['name'])} → ID: {c['user_id']}\n\n"
-        markup.add(InlineKeyboardButton(f"✏️ Edit {c['name']}", callback_data=f"edit_support_contact_{c['id']}", style="primary"))
-        markup.add(InlineKeyboardButton(f"➖ Remove {c['name']}", callback_data=f"remove_support_contact_{c['id']}", style="danger"))
-    markup.add(InlineKeyboardButton("➕ Add Contact", callback_data="add_support_contact", style="success"))
-    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_support", style="danger"))
+        markup.add(InlineKeyboardButton(f"✏️ Edit {c['name']}", callback_data=f"edit_support_contact_{c['id']}"))
+        markup.add(InlineKeyboardButton(f"➖ Remove {c['name']}", callback_data=f"remove_support_contact_{c['id']}"))
+    markup.add(InlineKeyboardButton("➕ Add Contact", callback_data="add_support_contact"))
+    markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_support"))
     safe_navigate(call, text, markup)
 
 def backup_database(call):
@@ -3440,7 +3455,7 @@ def prompt_restore(call):
         bot.answer_callback_query(call.id, "⛔ Only Admin 1", show_alert=True)
         return
     set_user_state(call.from_user.id, {"action": "restore_db"})
-    safe_navigate(call, "📂 RESTORE DATA\n\nBackup file bhejo (.db)", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel", style="danger")))
+    safe_navigate(call, "📂 RESTORE DATA\n\nBackup file bhejo (.db)", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_panel")))
 
 # ============ BROADCAST CATEGORY SENDERS ============
 # BUG #41 FIX: dedup user_ids
@@ -4195,7 +4210,7 @@ def handle_non_contact(message):
 
 🚀 Jaldi Purchase Karo!"""
             markup = InlineKeyboardMarkup(row_width=1)
-            markup.add(InlineKeyboardButton("🛒 Shop Now", callback_data="shop_now", style="danger"))
+            markup.add(InlineKeyboardButton("🛒 Shop Now", callback_data="shop_now"))
             try:
                 safe_send(user_row["user_id"], notif_text, markup)
             except Exception:
@@ -4339,7 +4354,7 @@ def callback_handler(call):
         show_manual_deposit(call)
     elif data == "manual_proof":
         set_user_state(user_id, {"action": "manual_screenshot"})
-        safe_navigate(call, "📸 PAYMENT PROOF\n\n━━━━━━━━━━━━━━━\n\nAb payment ka screenshot bhejo.\n\n━━━━━━━━━━━━━━━\n\n1. UPI app se payment karo\n2. Screenshot lo\n3. Screenshot yahan bhejo\n\n━━━━━━━━━━━━━━━", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Cancel", callback_data="manual_deposit", style="danger")))
+        safe_navigate(call, "📸 PAYMENT PROOF\n\n━━━━━━━━━━━━━━━\n\nAb payment ka screenshot bhejo.\n\n━━━━━━━━━━━━━━━\n\n1. UPI app se payment karo\n2. Screenshot lo\n3. Screenshot yahan bhejo\n\n━━━━━━━━━━━━━━━", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Cancel", callback_data="manual_deposit")))
     elif data.startswith("pad_"):
         handle_keypad(call, data, user_id)
     elif data == "history":
@@ -4356,7 +4371,7 @@ def callback_handler(call):
     elif data == "join_reseller":
         join_reseller(call)
     elif data == "reseller_panel":
-        safe_navigate(call, "🤝 Reseller Panel", InlineKeyboardMarkup().add(InlineKeyboardButton("🔑 Shop Key", callback_data="shop_now", style="danger"), InlineKeyboardButton("◀️ Back", callback_data="back_main", style="danger")))
+        safe_navigate(call, "🤝 Reseller Panel", InlineKeyboardMarkup().add(InlineKeyboardButton("🔑 Shop Key", callback_data="shop_now"), InlineKeyboardButton("◀️ Back", callback_data="back_main")))
     elif data == "selling_proof":
         show_selling_proof(call)
     elif data == "support":
@@ -4414,7 +4429,7 @@ def callback_handler(call):
         if len(parts) == 3:
             if is_bot_maintenance() and user_id not in get_admin_ids():
                 bot.answer_callback_query(call.id, "🔧 Bot maintenance mein hai!", show_alert=True)
-                safe_navigate(call, "🔧 <b>BOT UNDER MAINTENANCE</b>\n\n━━━━━━━━━━━━━━━\n\n⚠️ Bot abhi maintenance mein hai.\n\nKoi bhi purchase abhi nahi ho sakti.\n\n━━━━━━━━━━━━━━━", InlineKeyboardMarkup().add(InlineKeyboardButton("🔄 Check Again", callback_data="check_maintenance", style="primary")))
+                safe_navigate(call, "🔧 <b>BOT UNDER MAINTENANCE</b>\n\n━━━━━━━━━━━━━━━\n\n⚠️ Bot abhi maintenance mein hai.\n\nKoi bhi purchase abhi nahi ho sakti.\n\n━━━━━━━━━━━━━━━", InlineKeyboardMarkup().add(InlineKeyboardButton("🔄 Check Again", callback_data="check_maintenance")))
                 return
             try:
                 show_order_confirmation(call, int(parts[1]), int(parts[2]))
@@ -4425,7 +4440,7 @@ def callback_handler(call):
         if len(parts) == 3:
             if is_bot_maintenance() and user_id not in get_admin_ids():
                 bot.answer_callback_query(call.id, "🔧 Bot maintenance mein hai!", show_alert=True)
-                safe_navigate(call, "🔧 <b>BOT UNDER MAINTENANCE</b>\n\n━━━━━━━━━━━━━━━\n\n⚠️ Bot abhi maintenance mein hai.\n\nKoi bhi purchase abhi nahi ho sakti.\n\n━━━━━━━━━━━━━━━", InlineKeyboardMarkup().add(InlineKeyboardButton("🔄 Check Again", callback_data="check_maintenance", style="primary")))
+                safe_navigate(call, "🔧 <b>BOT UNDER MAINTENANCE</b>\n\n━━━━━━━━━━━━━━━\n\n⚠️ Bot abhi maintenance mein hai.\n\nKoi bhi purchase abhi nahi ho sakti.\n\n━━━━━━━━━━━━━━━", InlineKeyboardMarkup().add(InlineKeyboardButton("🔄 Check Again", callback_data="check_maintenance")))
                 return
             if is_rate_limited(f"purchase_{user_id}", 5, 60):
                 bot.answer_callback_query(call.id, "❌ Too many attempts", show_alert=True)
@@ -4601,7 +4616,7 @@ Send messages to users.
             bot.answer_callback_query(call.id, "⛔ Only Main Admin can add admins", show_alert=True)
             return
         set_user_state(user_id, {"action": "add_admin_id"})
-        safe_navigate(call, "➕ ADD ADMIN\n\nSend new admin ka User ID:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Cancel", callback_data="manage_admins", style="danger")))
+        safe_navigate(call, "➕ ADD ADMIN\n\nSend new admin ka User ID:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Cancel", callback_data="manage_admins")))
     elif data.startswith("remove_specific_admin_"):
         if user_id != ADMIN_USER_ID:
             bot.answer_callback_query(call.id, "⛔ Only Main Admin can remove admins", show_alert=True)
@@ -4660,7 +4675,7 @@ Send messages to users.
             pass
     elif data.startswith("reply_ticket_"):
         set_user_state(user_id, {"action": "admin_ticket_reply", "ticket_id": int(data.split("_")[2])})
-        safe_navigate(call, "💬 Reply likho:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_tickets", style="danger")))
+        safe_navigate(call, "💬 Reply likho:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_tickets")))
     elif data.startswith("close_ticket_"):
         try:
             conn = get_db()
@@ -4676,13 +4691,13 @@ Send messages to users.
     elif data == "admin_change_qr":
         if user_id == ADMIN_USER_ID:
             set_user_state(user_id, {"action": "change_qr"})
-            safe_navigate(call, "📱 Send new QR:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_payments", style="danger")))
+            safe_navigate(call, "📱 Send new QR:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_payments")))
         else:
             bot.answer_callback_query(call.id, "⛔ Sirf Admin 1 change kar sakta hai!", show_alert=True)
     elif data == "admin_change_manual_upi":
         if user_id == ADMIN_USER_ID:
             set_user_state(user_id, {"action": "change_manual_upi"})
-            safe_navigate(call, "🔗 Send new Manual UPI ID:\n\nExample: yourname@paytm", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_payments", style="danger")))
+            safe_navigate(call, "🔗 Send new Manual UPI ID:\n\nExample: yourname@paytm", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_payments")))
         else:
             bot.answer_callback_query(call.id, "⛔ Sirf Admin 1 change kar sakta hai!", show_alert=True)
     elif data == "admin_selling_proof":
@@ -4690,12 +4705,12 @@ Send messages to users.
             bot.answer_callback_query(call.id, "⛔ Only Main Admin", show_alert=True)
             return
         set_user_state(user_id, {"action": "admin_selling_proof"})
-        safe_navigate(call, "📸 Send channel link:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_support", style="danger")))
+        safe_navigate(call, "📸 Send channel link:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_support")))
     elif data == "admin_tutorial_video":
         show_tutorial_video_menu(call)
     elif data == "change_tutorial_video":
         set_user_state(user_id, {"action": "change_tutorial_video"})
-        safe_navigate(call, "🎬 Send new video link:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_tutorial_video", style="danger")))
+        safe_navigate(call, "🎬 Send new video link:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_tutorial_video")))
     elif data == "admin_reseller_prices":
         show_reseller_price_products(call)
     elif data == "reseller_category_root":
@@ -4711,17 +4726,17 @@ Send messages to users.
             pass
     elif data.startswith("edit_reseller_price_"):
         set_user_state(user_id, {"action": "edit_reseller_price", "plan_id": int(data.split("_")[3])})
-        safe_navigate(call, "💰 Send price:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_reseller_prices", style="danger")))
+        safe_navigate(call, "💰 Send price:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_reseller_prices")))
     elif data == "admin_reseller_fee":
         show_reseller_fee_menu(call)
     elif data == "change_reseller_fee":
         set_user_state(user_id, {"action": "change_reseller_fee"})
-        safe_navigate(call, "💰 Send new fee:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_reseller_fee", style="danger")))
+        safe_navigate(call, "💰 Send new fee:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_reseller_fee")))
     elif data == "admin_min_balance":
         show_min_balance_menu(call)
     elif data == "change_min_balance":
         set_user_state(user_id, {"action": "change_min_balance"})
-        safe_navigate(call, "💳 Send new minimum balance:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_min_balance", style="danger")))
+        safe_navigate(call, "💳 Send new minimum balance:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_min_balance")))
     elif data == "admin_min_deposit":
         if user_id != ADMIN_USER_ID:
             bot.answer_callback_query(call.id, "⛔ Only Main Admin", show_alert=True)
@@ -4732,7 +4747,7 @@ Send messages to users.
             bot.answer_callback_query(call.id, "⛔ Only Main Admin", show_alert=True)
             return
         set_user_state(user_id, {"action": "change_min_deposit"})
-        safe_navigate(call, "💰 Send new minimum deposit:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_min_deposit", style="danger")))
+        safe_navigate(call, "💰 Send new minimum deposit:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_min_deposit")))
     elif data == "admin_support_contacts":
         if user_id != ADMIN_USER_ID:
             bot.answer_callback_query(call.id, "⛔ Only Main Admin", show_alert=True)
@@ -4743,19 +4758,19 @@ Send messages to users.
             bot.answer_callback_query(call.id, "⛔ Only Main Admin", show_alert=True)
             return
         set_user_state(user_id, {"action": "add_support_contact"})
-        safe_navigate(call, "➕ ADD CONTACT\n\nSend format:\n\nName | UserID", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_support_contacts", style="danger")))
+        safe_navigate(call, "➕ ADD CONTACT\n\nSend format:\n\nName | UserID", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_support_contacts")))
     elif data == "edit_support_contact_default_1":
         if user_id != ADMIN_USER_ID:
             bot.answer_callback_query(call.id, "⛔ Only Main Admin", show_alert=True)
             return
         set_user_state(user_id, {"action": "edit_support_contact_default_1"})
-        safe_navigate(call, "✏️ EDIT NAME\n\nSend new name:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_support_contacts", style="danger")))
+        safe_navigate(call, "✏️ EDIT NAME\n\nSend new name:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_support_contacts")))
     elif data == "edit_support_url":
         if user_id != ADMIN_USER_ID:
             bot.answer_callback_query(call.id, "⛔ Only Main Admin", show_alert=True)
             return
         set_user_state(user_id, {"action": "edit_support_url"})
-        safe_navigate(call, "✏️ EDIT URL\n\nSend new URL (https://...):", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_support_contacts", style="danger")))
+        safe_navigate(call, "✏️ EDIT URL\n\nSend new URL (https://...):", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_support_contacts")))
     elif data.startswith("edit_support_contact_"):
         if user_id != ADMIN_USER_ID:
             bot.answer_callback_query(call.id, "⛔ Only Main Admin", show_alert=True)
@@ -4763,7 +4778,7 @@ Send messages to users.
         try:
             contact_id = int(data.split("_")[3])
             set_user_state(user_id, {"action": "edit_support_contact", "contact_id": contact_id})
-            safe_navigate(call, "✏️ EDIT CONTACT\n\nSend format:\n\nName | UserID", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_support_contacts", style="danger")))
+            safe_navigate(call, "✏️ EDIT CONTACT\n\nSend format:\n\nName | UserID", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_support_contacts")))
         except Exception:
             pass
     elif data.startswith("remove_support_contact_"):
@@ -4840,11 +4855,11 @@ Send messages to users.
                 break
             text += entry
         text += "━━━━━━━━━━━━━━━"
-        markup = InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_faq_menu", style="danger"))
+        markup = InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_faq_menu"))
         safe_navigate(call, text, markup)
     elif data == "faq_add":
         set_user_state(user_id, {"action": "faq_add"})
-        safe_navigate(call, "➕ ADD FAQ\n\nSend format:\n\nQuestion | Answer", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_faq_menu", style="danger")))
+        safe_navigate(call, "➕ ADD FAQ\n\nSend format:\n\nQuestion | Answer", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_faq_menu")))
     elif data == "faq_remove_menu":
         conn = get_db()
         cursor = conn.cursor()
@@ -4853,12 +4868,12 @@ Send messages to users.
         cursor.close()
         conn.close()
         if not rows:
-            safe_navigate(call, "❌ No FAQ to remove.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_faq_menu", style="danger")))
+            safe_navigate(call, "❌ No FAQ to remove.", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_faq_menu")))
             return
         markup = InlineKeyboardMarkup(row_width=1)
         for f in rows:
-            markup.add(InlineKeyboardButton(f"🗑️ {f['question'][:40]}", callback_data=f"faq_delete_{f['id']}", style="danger"))
-        markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_faq_menu", style="danger"))
+            markup.add(InlineKeyboardButton(f"🗑️ {f['question'][:40]}", callback_data=f"faq_delete_{f['id']}"))
+        markup.add(InlineKeyboardButton("◀️ Back", callback_data="admin_faq_menu"))
         safe_navigate(call, "➖ REMOVE FAQ\n\nSelect to delete:", markup)
     elif data.startswith("faq_delete_"):
         try:
@@ -4884,46 +4899,46 @@ Send messages to users.
             bot.answer_callback_query(call.id, "⛔ Only Main Admin", show_alert=True)
             return
         set_user_state(user_id, {"action": "add_product", "category": "root"})
-        safe_navigate(call, "📝 Send ROOT product name(s):", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_products", style="danger")))
+        safe_navigate(call, "📝 Send ROOT product name(s):", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_products")))
     elif data == "add_product_nonroot":
         if user_id != ADMIN_USER_ID:
             bot.answer_callback_query(call.id, "⛔ Only Main Admin", show_alert=True)
             return
         set_user_state(user_id, {"action": "add_product", "category": "nonroot"})
-        safe_navigate(call, "📝 Send NON-ROOT product name(s):", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_products", style="danger")))
+        safe_navigate(call, "📝 Send NON-ROOT product name(s):", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_products")))
     elif data == "add_product_iphone":
         if user_id != ADMIN_USER_ID:
             bot.answer_callback_query(call.id, "⛔ Only Main Admin", show_alert=True)
             return
         set_user_state(user_id, {"action": "add_product", "category": "iphone"})
-        safe_navigate(call, "📝 Send IPHONE product name(s):", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_products", style="danger")))
+        safe_navigate(call, "📝 Send IPHONE product name(s):", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_products")))
     elif data == "admin_add_balance":
         if user_id != ADMIN_USER_ID:
             bot.answer_callback_query(call.id, "⛔ Only Main Admin", show_alert=True)
             return
         set_user_state(user_id, {"action": "admin_add_balance"})
-        safe_navigate(call, "💰 Send: user_id amount", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_users", style="danger")))
+        safe_navigate(call, "💰 Send: user_id amount", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_users")))
     elif data == "admin_ban_user":
         set_user_state(user_id, {"action": "admin_ban"})
-        safe_navigate(call, "🚫 Send user ID:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_users", style="danger")))
+        safe_navigate(call, "🚫 Send user ID:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_users")))
     elif data == "admin_unban_user":
         set_user_state(user_id, {"action": "admin_unban"})
-        safe_navigate(call, "✅ Send user ID:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_users", style="danger")))
+        safe_navigate(call, "✅ Send user ID:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_users")))
     elif data == "admin_broadcast_all":
         set_user_state(user_id, {"action": "admin_broadcast_all"})
-        safe_navigate(call, "📢 Send broadcast message for ALL users:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_broadcast", style="danger")))
+        safe_navigate(call, "📢 Send broadcast message for ALL users:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_broadcast")))
     elif data == "admin_broadcast_verified":
         set_user_state(user_id, {"action": "admin_broadcast_verified"})
-        safe_navigate(call, "📢 Send broadcast message for VERIFIED users:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_broadcast", style="danger")))
+        safe_navigate(call, "📢 Send broadcast message for VERIFIED users:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_broadcast")))
     elif data == "admin_broadcast_inactive":
         set_user_state(user_id, {"action": "admin_broadcast_inactive"})
-        safe_navigate(call, "📢 Send broadcast message for INACTIVE users:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_broadcast", style="danger")))
+        safe_navigate(call, "📢 Send broadcast message for INACTIVE users:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_broadcast")))
     elif data == "admin_broadcast_resellers":
         set_user_state(user_id, {"action": "admin_broadcast_resellers"})
-        safe_navigate(call, "📢 Send broadcast message for RESELLERS:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_broadcast", style="danger")))
+        safe_navigate(call, "📢 Send broadcast message for RESELLERS:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_broadcast")))
     elif data == "admin_broadcast_balance":
         set_user_state(user_id, {"action": "admin_broadcast_balance"})
-        safe_navigate(call, "📢 Send broadcast message for users with BALANCE:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_broadcast", style="danger")))
+        safe_navigate(call, "📢 Send broadcast message for users with BALANCE:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_broadcast")))
     elif data == "admin_broadcast_media":
         if user_id != ADMIN_USER_ID:
             bot.answer_callback_query(call.id, "⛔ Only Main Admin", show_alert=True)
@@ -4940,7 +4955,7 @@ Send messages to users.
             "📄 Document\n\n"
             "Caption ke saath ya bina caption.\n\n"
             "Bot sab users ko broadcast karega.",
-            InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Cancel", callback_data="admin_broadcast", style="danger"))
+            InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Cancel", callback_data="admin_broadcast"))
         )
     elif data.startswith("manage_product_"):
         try:
@@ -4959,10 +4974,10 @@ Send messages to users.
             pass
     elif data.startswith("edit_plan_price_"):
         set_user_state(user_id, {"action": "edit_plan_price", "plan_id": int(data.split("_")[3])})
-        safe_navigate(call, "💰 Send new price:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_products", style="danger")))
+        safe_navigate(call, "💰 Send new price:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_products")))
     elif data.startswith("edit_plan_duration_"):
         set_user_state(user_id, {"action": "edit_plan_duration", "plan_id": int(data.split("_")[3])})
-        safe_navigate(call, "⏰ Send duration (e.g. 1 Hour, 7 Days):", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_products", style="danger")))
+        safe_navigate(call, "⏰ Send duration (e.g. 1 Hour, 7 Days):", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_products")))
     elif data.startswith("del_plan_"):
         try:
             delete_plan(call, int(data.split("_")[2]))
@@ -4970,10 +4985,10 @@ Send messages to users.
             pass
     elif data.startswith("edit_name_"):
         set_user_state(user_id, {"action": "edit_name", "product_id": int(data.split("_")[2])})
-        safe_navigate(call, "📝 Send name:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{data.split('_')[2]}", style="danger")))
+        safe_navigate(call, "📝 Send name:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{data.split('_')[2]}")))
     elif data.startswith("add_plan_menu_"):
         set_user_state(user_id, {"action": "add_plan_menu", "product_id": int(data.split("_")[3])})
-        safe_navigate(call, "📅 Send plans:\n\nFormat: duration price\n\nExample:\n1 Hour 10\n3 Hours 20\n1 Day 70\n7 Days 261", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{data.split('_')[3]}", style="danger")))
+        safe_navigate(call, "📅 Send plans:\n\nFormat: duration price\n\nExample:\n1 Hour 10\n3 Hours 20\n1 Day 70\n7 Days 261", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{data.split('_')[3]}")))
     elif data.startswith("set_api_pid_"):
         if user_id != ADMIN_USER_ID:
             bot.answer_callback_query(call.id, "⛔ Only Main Admin", show_alert=True)
@@ -4981,26 +4996,26 @@ Send messages to users.
         try:
             product_id = int(data.split("_")[3])
             set_user_state(user_id, {"action": "set_api_pid", "product_id": product_id})
-            safe_navigate(call, "🔗 Send API PID (from website):", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{product_id}", style="danger")))
+            safe_navigate(call, "🔗 Send API PID (from website):", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{product_id}")))
         except Exception:
             pass
     elif data.startswith("add_video_menu_"):
         try:
             set_user_state(user_id, {"action": "add_video", "product_id": int(data.split("_")[3])})
-            safe_navigate(call, "📺 Send video link:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{data.split('_')[3]}", style="danger")))
+            safe_navigate(call, "📺 Send video link:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{data.split('_')[3]}")))
         except Exception:
             pass
     elif data.startswith("add_download_link_"):
         try:
             product_id = int(data.split("_")[3])
             set_user_state(user_id, {"action": "add_download_link", "product_id": product_id})
-            safe_navigate(call, "📥 Send channel link:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{product_id}", style="danger")))
+            safe_navigate(call, "📥 Send channel link:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{product_id}")))
         except Exception:
             pass
     elif data.startswith("add_features_menu_"):
         try:
             set_user_state(user_id, {"action": "add_features", "product_id": int(data.split("_")[3])})
-            safe_navigate(call, "📝 Send features:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{data.split('_')[3]}", style="danger")))
+            safe_navigate(call, "📝 Send features:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data=f"manage_product_{data.split('_')[3]}")))
         except Exception:
             pass
     elif data.startswith("toggle_maint_"):
@@ -5050,7 +5065,7 @@ Send messages to users.
             bot.answer_callback_query(call.id, "⛔ Access denied", show_alert=True)
             return
         set_user_state(user_id, {"action": "admin_reject_reason", "deposit_id": int(data.split("_")[3])})
-        safe_navigate(call, "📝 Reason:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_deposit_requests", style="danger")))
+        safe_navigate(call, "📝 Reason:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="admin_deposit_requests")))
     elif data.startswith("copy_key_"):
         bot.answer_callback_query(call.id, "✅ Key pe click karo—copy ho jayegi!", show_alert=True)
     elif data.startswith("notify_"):
@@ -5063,7 +5078,7 @@ Send messages to users.
             bot.answer_callback_query(call.id, "❌ Please wait before creating another ticket.", show_alert=True)
             return
         set_user_state(user_id, {"action": "ticket_subject"})
-        safe_navigate(call, "🎫 Subject likho:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="support", style="danger")))
+        safe_navigate(call, "🎫 Subject likho:", InlineKeyboardMarkup().add(InlineKeyboardButton("◀️ Back", callback_data="support")))
     else:
         bot.answer_callback_query(call.id, "🔜 Coming soon")
 
